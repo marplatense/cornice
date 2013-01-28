@@ -16,6 +16,7 @@ from docutils import nodes, core
 from docutils.parsers.rst import Directive, directives
 from docutils.writers.html4css1 import Writer, HTMLTranslator
 from sphinx.util.docfields import DocFieldTransformer
+import collections
 
 
 def convert_to_list(argument):
@@ -126,7 +127,7 @@ class ServiceDirective(Directive):
             if 'accept' in args:
                 accept = to_list(args['accept'])
 
-                if callable(accept):
+                if isinstance(accept, collections.Callable):
                     if accept.__doc__ is not None:
                         docstring += accept.__doc__.strip()
                 else:
@@ -176,14 +177,14 @@ def trim(docstring):
     # and split into a list of lines:
     lines = docstring.expandtabs().splitlines()
     # Determine minimum indentation (first line doesn't count):
-    indent = sys.maxint
+    indent = sys.maxsize
     for line in lines[1:]:
         stripped = line.lstrip()
         if stripped:
             indent = min(indent, len(line) - len(stripped))
     # Remove indentation (first line is special):
     trimmed = [lines[0].strip()]
-    if indent < sys.maxint:
+    if indent < sys.maxsize:
         for line in lines[1:]:
             trimmed.append(line[indent:].rstrip())
     # Strip off trailing and leading blank lines:
@@ -193,7 +194,7 @@ def trim(docstring):
         trimmed.pop(0)
     # Return a single string:
     res = '\n'.join(trimmed)
-    if not isinstance(res, unicode):
+    if not isinstance(res, str):
         res = res.decode('utf8')
     return res
 
